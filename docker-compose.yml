@@ -8,6 +8,7 @@ services:
       - "8080:8080"   # HTTP server
       - "22:23234"    # SSH TUI server (expose on port 22)
     environment:
+      - TERM=xterm-256color
       - DB_PATH=/app/data/curltree.db
       - HOST_KEY_PATH=/app/.ssh/curltree_host_key
       - SERVER_HOST=0.0.0.0

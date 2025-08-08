@@ -4,6 +4,7 @@ type AppState int
 
 const (
 	StateLoading AppState = iota
+	StateError
 	StateProfileView
 	StateProfileEdit
 	StateProfileCreate

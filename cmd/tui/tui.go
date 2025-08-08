@@ -51,11 +51,19 @@ func getASCIIArt() string {
 func newTUIModel(s ssh.Session, db *database.DB) tea.Model {
 	publicKey := s.PublicKey()
 	var sshKey string
-	if publicKey != nil {
-		keyBytes := publicKey.Marshal()
-		hash := sha256.Sum256(keyBytes)
-		sshKey = fmt.Sprintf("%s:%s", publicKey.Type(), hex.EncodeToString(hash[:]))
+	
+	if publicKey == nil {
+		return &tuiModel{
+			session: s,
+			db:      db,
+			state:   models.StateError,
+			err:     fmt.Errorf("no SSH public key found - please ensure you're connecting with a valid SSH key"),
+		}
 	}
+
+	keyBytes := publicKey.Marshal()
+	hash := sha256.Sum256(keyBytes)
+	sshKey = fmt.Sprintf("%s:%s", publicKey.Type(), hex.EncodeToString(hash[:]))
 
 	user, _ := db.GetUserBySSHKey(sshKey)
 
@@ -103,7 +111,7 @@ func (m *tuiModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
-			if m.state == models.StateProfileView || m.state == models.StateProfileCreate {
+			if m.state == models.StateProfileView || m.state == models.StateProfileCreate || m.state == models.StateError {
 				return m, tea.Quit
 			}
 		}
@@ -159,6 +167,8 @@ func (m *tuiModel) View() string {
 	switch m.state {
 	case models.StateLoading:
 		return m.loadingView()
+	case models.StateError:
+		return m.errorView()
 	case models.StateProfileView:
 		return m.profileView()
 	case models.StateProfileEdit:
@@ -173,6 +183,21 @@ func (m *tuiModel) View() string {
 
 func (m *tuiModel) loadingView() string {
 	return "Loading..."
+}
+
+func (m *tuiModel) errorView() string {
+	content := asciiStyle.Render(getASCIIArt()) + "\n\n"
+	content += errorStyle.Render("Authentication Error") + "\n\n"
+	
+	if m.err != nil {
+		content += fmt.Sprintf("Error: %v\n\n", m.err)
+	}
+	
+	content += "Please ensure you're connecting with a valid SSH key.\n"
+	content += "Example: ssh -i ~/.ssh/id_rsa user@curltree.dev\n\n"
+	
+	help := helpStyle.Render("ctrl+c: exit")
+	return content + help
 }
 
 func (m *tuiModel) profileView() string {

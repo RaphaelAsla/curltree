@@ -1,0 +1,28 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "read_timeout": "30s",
+    "write_timeout": "30s",
+    "rate_limit": {
+      "requests_per_minute": 60,
+      "burst": 10
+    }
+  },
+  "ssh": {
+    "host": "0.0.0.0",
+    "port": 23234,
+    "host_key_path": ".ssh/curltree_host_key"
+  },
+  "database": {
+    "type": "sqlite",
+    "path": "./curltree.db",
+    "max_open_conns": 10,
+    "max_idle_conns": 5
+  },
+  "logging": {
+    "level": "info",
+    "format": "text",
+    "output": "stdout"
+  }
+}

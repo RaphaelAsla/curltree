@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  curltree:
+    build: .
+    container_name: curltree
+    ports:
+      - "8080:8080"   # HTTP server
+      - "23234:23234" # SSH TUI server
+    environment:
+      - DB_PATH=/app/data/curltree.db
+      - HOST_KEY_PATH=/app/.ssh/curltree_host_key
+      - SERVER_HOST=0.0.0.0
+      - SSH_HOST=0.0.0.0
+      - LOG_LEVEL=info
+      - RATE_LIMIT_PER_MINUTE=60
+      - RATE_LIMIT_BURST=10
+    volumes:
+      - curltree_data:/app/data
+      - curltree_keys:/app/.ssh
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: PostgreSQL for production
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: curltree-db
+  #   environment:
+  #     POSTGRES_DB: curltree
+  #     POSTGRES_USER: curltree
+  #     POSTGRES_PASSWORD: your-secure-password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+  # Optional: Nginx reverse proxy
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: curltree-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+  #     - ./ssl:/etc/ssl:ro
+  #   depends_on:
+  #     - curltree
+  #   restart: unless-stopped
+
+volumes:
+  curltree_data:
+    driver: local
+  curltree_keys:
+    driver: local
+  # postgres_data:
+  #   driver: local

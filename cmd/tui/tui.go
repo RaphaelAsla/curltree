@@ -64,8 +64,19 @@ func newTUIModel(s ssh.Session, db *database.DB) tea.Model {
 	keyBytes := publicKey.Marshal()
 	hash := sha256.Sum256(keyBytes)
 	sshKey = fmt.Sprintf("%s:%s", publicKey.Type(), hex.EncodeToString(hash[:]))
+	
+	// Debug: Log the SSH key being processed
+	fmt.Printf("DEBUG: Processing SSH key: %s\n", sshKey)
+	fmt.Printf("DEBUG: Key type: %s, Key length: %d bytes\n", publicKey.Type(), len(keyBytes))
 
-	user, _ := db.GetUserBySSHKey(sshKey)
+	user, err := db.GetUserBySSHKey(sshKey)
+	if err != nil {
+		fmt.Printf("DEBUG: Error looking up user by SSH key: %v\n", err)
+	} else if user != nil {
+		fmt.Printf("DEBUG: Found existing user: %s (%s)\n", user.Username, user.FullName)
+	} else {
+		fmt.Printf("DEBUG: No existing user found for this SSH key\n")
+	}
 
 	var state models.AppState
 	if user != nil {

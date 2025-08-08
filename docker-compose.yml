@@ -6,7 +6,7 @@ services:
     container_name: curltree
     ports:
       - "8080:8080"   # HTTP server
-      - "23234:23234" # SSH TUI server
+      - "22:23234"    # SSH TUI server (expose on port 22)
     environment:
       - DB_PATH=/app/data/curltree.db
       - HOST_KEY_PATH=/app/.ssh/curltree_host_key

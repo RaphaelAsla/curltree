@@ -78,6 +78,12 @@ dev-tui: ## Run TUI in development mode with auto-reload
 	@echo "Starting development TUI..."
 	@go run ./cmd/tui
 
+run-dev: ## Run both server and TUI in development mode (uses port 23234)
+	@echo "Starting development environment..."
+	@echo "HTTP server: http://localhost:8080"
+	@echo "SSH TUI: ssh -p 23234 localhost"
+	@$(MAKE) -j2 dev-server dev-tui
+
 generate-keys: ## Generate SSH host key for development
 	@echo "Generating SSH host key..."
 	@mkdir -p .ssh

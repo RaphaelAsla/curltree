@@ -24,14 +24,8 @@ func NewAuthService(db *database.DB) *AuthService {
 func (a *AuthService) Middleware() wish.Middleware {
 	return func(sh ssh.Handler) ssh.Handler {
 		return func(s ssh.Session) {
-			publicKey := s.PublicKey()
-			if publicKey == nil {
-				wish.Fatalln(s, "No public key provided")
-				return
-			}
-
-			// Just validate the SSH key exists - authentication is successful
-			// The TUI will handle user lookup and context
+			// Let the SSH session continue - public key validation
+			// will be handled in the TUI after the handshake is complete
 			sh(s)
 		}
 	}

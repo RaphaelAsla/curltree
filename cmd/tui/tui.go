@@ -51,20 +51,20 @@ func getASCIIArt() string {
 func newTUIModel(s ssh.Session, db *database.DB) tea.Model {
 	publicKey := s.PublicKey()
 	var sshKey string
-	
+
 	if publicKey == nil {
 		return &tuiModel{
 			session: s,
 			db:      db,
 			state:   models.StateError,
-			err:     fmt.Errorf("no SSH public key found - please ensure you're connecting with a valid SSH key"),
+			err:     fmt.Errorf("No SSH public key found - please ensure you're connecting with a valid SSH key"),
 		}
 	}
 
 	keyBytes := publicKey.Marshal()
 	hash := sha256.Sum256(keyBytes)
 	sshKey = fmt.Sprintf("%s:%s", publicKey.Type(), hex.EncodeToString(hash[:]))
-	
+
 	// Debug: Log the SSH key being processed
 	fmt.Printf("DEBUG: Processing SSH key: %s\n", sshKey)
 	fmt.Printf("DEBUG: Key type: %s, Key length: %d bytes\n", publicKey.Type(), len(keyBytes))
@@ -199,14 +199,14 @@ func (m *tuiModel) loadingView() string {
 func (m *tuiModel) errorView() string {
 	content := asciiStyle.Render(getASCIIArt()) + "\n\n"
 	content += errorStyle.Render("Authentication Error") + "\n\n"
-	
+
 	if m.err != nil {
 		content += fmt.Sprintf("Error: %v\n\n", m.err)
 	}
-	
+
 	content += "Please ensure you're connecting with a valid SSH key.\n"
 	content += "Example: ssh -i ~/.ssh/id_rsa user@curltree.dev\n\n"
-	
+
 	help := helpStyle.Render("ctrl+c: exit")
 	return content + help
 }
@@ -321,4 +321,3 @@ func (m *tuiModel) confirmDeleteView() string {
 	content += helpStyle.Render("y: yes, delete • n: no, cancel")
 	return content
 }
-

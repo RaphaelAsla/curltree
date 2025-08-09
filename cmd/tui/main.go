@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time"
 
-	"curltree/internal/auth"
 	"curltree/internal/config"
 	"curltree/internal/database"
 
@@ -32,15 +31,16 @@ func main() {
 	}
 	defer db.Close()
 
-	authService := auth.NewAuthService(db)
-
 	sshAddr := fmt.Sprintf("%s:%d", cfg.SSH.Host, cfg.SSH.Port)
 	
 	s, err := wish.NewServer(
 		wish.WithAddress(sshAddr),
 		wish.WithHostKeyPath(cfg.SSH.HostKeyPath),
+		wish.WithPublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
+			// Accept any valid public key - the TUI will handle user lookup
+			return true
+		}),
 		wish.WithMiddleware(
-			authService.Middleware(),
 			bubbletea.Middleware(func(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 				return newTUIModel(s, db), []tea.ProgramOption{tea.WithAltScreen()}
 			}),
